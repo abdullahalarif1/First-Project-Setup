@@ -1,20 +1,37 @@
-import { StudentModel } from "../student.model&schema";
-import { Student } from "./student.interface";
+import { Student } from "../student.model&schema";
+import { TStudent } from "./student.interface";
 
-const createStudentIntoDB = async (student: Student) => {
-  const result = await StudentModel.create(student); // mongoose function create
+// create students
+const createStudentIntoDB = async (studentData: TStudent) => {
+  // static method
+  if (await Student.isUserExists(studentData.id)) {
+    throw new Error("User already exists!");
+  }
+
+  const result = await Student.create(studentData); // mongoose function create
+
   return result;
 };
 
 // get all students
 const getAllStudentsFromDB = async () => {
-  const result = await StudentModel.find();
+  const result = await Student.find();
   return result;
 };
 
 // get all students
 const getSingleStudentFromDB = async (id: string) => {
-  const result = await StudentModel.findOne({ id });
+  //   const result = await Student.findOne({ id });
+
+  const result = await Student.aggregate([
+    { $match: { id: id } }
+]);
+  return result;
+};
+
+// get all students
+const deleteStudentFromDB = async (id: string) => {
+  const result = await Student.updateOne({ id }, { isDeleted: true }); // id , ki delete hobe oita
   return result;
 };
 
@@ -22,4 +39,5 @@ export const StudentServices = {
   createStudentIntoDB,
   getAllStudentsFromDB,
   getSingleStudentFromDB,
+  deleteStudentFromDB,
 };
